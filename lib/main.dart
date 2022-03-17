@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:todayrecipe/view/bookMark.dart';
+import 'package:todayrecipe/view/kitchen.dart';
+import 'package:todayrecipe/view/myPage.dart';
+import 'package:todayrecipe/view/recipe.dart';
 import 'package:todayrecipe/widget/bottomBar.dart';
 
 void main() {
@@ -11,12 +15,19 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
         title: '오늘레시피',
-        theme:
-            ThemeData(brightness: Brightness.light, primaryColor: Colors.white),
+        theme: ThemeData(
+          brightness: Brightness.light,
+          primaryColor: Colors.white,
+          //fontFamily: 'Cafe24Ssurround'
+        ),
         home: DefaultTabController(
             length: 3,
             child: Scaffold(
-                bottomNavigationBar: BottomBar(),
-                )));
+              body: TabBarView(
+                children: <Widget>[Kitchen(), Recipe(), BookMark()],
+                physics: NeverScrollableScrollPhysics(),
+              ),
+              bottomNavigationBar: BottomBar(),
+            )));
   }
 }

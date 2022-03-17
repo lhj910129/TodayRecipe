@@ -8,17 +8,16 @@ class BottomBar extends StatelessWidget {
     return Container(
       color: Colors.white,
       child: Container(
-        height: 90,
+        height: 80,
         child: TabBar(
-          labelColor: Colors.red[700],
+          labelColor: Colors.orange[700],
           unselectedLabelColor: Colors.black26,
           indicatorColor: Colors.transparent,
-          tabs: <Widget>[
-            
+          tabs: const <Widget>[
             Tab(
               icon: Icon(
                 Icons.kitchen,
-                size: 25,
+                size: 20,
               ),
               child: Text(
                 '냉장고',
@@ -28,7 +27,7 @@ class BottomBar extends StatelessWidget {
             Tab(
               icon: Icon(
                 Icons.restaurant_outlined,
-                size: 25,
+                size: 20,
               ),
               child: Text(
                 '레시피',
@@ -38,13 +37,23 @@ class BottomBar extends StatelessWidget {
             Tab(
               icon: Icon(
                 Icons.bookmarks_outlined,
-                size: 25,
+                size: 20,
               ),
               child: Text(
                 '즐겨찾기',
                 style: TextStyle(fontSize: 12),
               ),
             ),
+            // Tab(
+            //   icon: Icon(
+            //     Icons.person,
+            //     size: 20,
+            //   ),
+            //   child: Text(
+            //     '마이페이지',
+            //     style: TextStyle(fontSize: 12),
+            //   ),
+            // ),
           ],
         ),
       ),
