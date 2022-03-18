@@ -1,6 +1,10 @@
 import 'dart:ui';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:filter_list/filter_list.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:todayrecipe/model/ingredient.dart';
 
 class Kitchen extends StatefulWidget {
   const Kitchen({Key? key}) : super(key: key);
@@ -10,69 +14,129 @@ class Kitchen extends StatefulWidget {
 }
 
 class _KitchenState extends State<Kitchen> {
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
+  Stream<QuerySnapshot>? streamData;
 
-  Fridges frg = Fridges();
+  @override
+  void InitState() {
+    super.initState();
 
+    streamData = firestore.collection('ingredient').snapshots();
+  }
+
+  //데이터 가져오기
+  Widget _fetchData(BuildContext context) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance.collection('ingredient').snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return LinearProgressIndicator();
+        return _buildBody(context, snapshot.data!.docs)!;
+      },
+    );
+  }
+
+  Widget? _buildBody(BuildContext context, List<DocumentSnapshot> snapshot) {
+    List<Ingredient> ingredient =
+        snapshot.map((e) => Ingredient.fromSnapShot(e)).toList();
+
+    return Scaffold(
+      appBar: KetchenAppBar(),
+      body: Wrap(children: getIngredients(context, ingredient)), //Fridges(),
+      //body: FilterPage(ingredient: ingredient),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        backgroundColor: Colors.deepOrangeAccent,
+        onPressed: () {
+          /*
+              - 추가버튼을 숨긴다
+              
+              - 삭제, 이동 버튼이 보여야한다 -> 앱바를 아예바꿀까
+
+
+
+             */
+        },
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: Text('냉장고'),
-          centerTitle: true,
-          elevation: 0.0,
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.orange[700],
-          actions: <Widget>[
-            TextButton(
-                
-                onPressed: () {
-                  /*
-                  1. 텍스트가 취소 일때
-                    - 텍스트가 선택으로 바뀐다.
-                    - 모든 칩들에 체크박스가 생긴다.
-                    - 하단바가 삭제, 이동 버튼을 표시하는 Bar로 바뀐다.
-                  2. 텍스트가 선택 일때
-                    - 텍스트가 취소로 바뀐다.
-                    - 모든 칩들의 체크박스가 사라진다.
-                    - 하단바가 디폴트 하단바로 바뀐다.
-                  */
+    return _fetchData(context);
+  }
+}
 
+class KetchenAppBar extends StatefulWidget with PreferredSizeWidget {
+  const KetchenAppBar({Key? key}) : super(key: key);
 
+  @override
+  State<KetchenAppBar> createState() => _KetchenAppBarState();
 
+  @override
+  Size get preferredSize => Size.fromHeight(60);
+}
 
-                },
-                child: Text(
-                  '선택',
-                  style: TextStyle(color: Colors.orange[600]),
-                )),
-            // TextButton(
-            //     onPressed: () {},
-            //     child: Text(
-            //       '삭제',
-            //       style: TextStyle(color: Colors.orange[600]),
-            //     )),
-            // TextButton(
-            //     onPressed: () {},
-            //     child: Text(
-            //       '이동',
-            //       style: TextStyle(color: Colors.orange[600]),
-            //     )),
-          ],
-        ),
-        body: frg,
-        floatingActionButton: FloatingActionButton(
-          child: Icon(Icons.add),
-          backgroundColor: Colors.orange[600],
-          onPressed: () {},
-        ));
+class _KetchenAppBarState extends State<KetchenAppBar> {
+  bool selMode = false; //재료 선택모드 구별용도
+
+  @override
+  void InitState() {
+    super.initState();
+
+    bool selMode = false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+        title: Text('냉장고'),
+        centerTitle: true,
+        elevation: 0.0,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.deepOrangeAccent,
+        actions: selMode
+            ? [
+                TextButton(
+                    onPressed: () {},
+                    child: Text(
+                      '삭제',
+                      style: TextStyle(color: Colors.deepOrangeAccent),
+                    )),
+                TextButton(
+                    onPressed: () {
+                      print(selMode);
+
+                      setState(() {
+                        selMode = !selMode;
+                      });
+                    },
+                    child: Text(
+                      '취소',
+                      style: TextStyle(color: Colors.deepOrangeAccent),
+                    )),
+              ]
+            : [
+                TextButton(
+                    onPressed: () {
+                      print(selMode);
+
+                      setState(() {
+                        
+
+                        
+                        selMode = !selMode;
+                      });
+                    },
+                    child: Text(
+                      '선택',
+                      style: TextStyle(color: Colors.deepOrangeAccent),
+                    )),
+              ]);
   }
 }
 
 //냉장고
-class Fridges extends StatelessWidget {
-  const Fridges({Key? key}) : super(key: key);
-
+class getFridges extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // return Container(child: Text('냉장고가 없어요.'),);
@@ -84,7 +148,7 @@ class Fridges extends StatelessWidget {
           Container(
               child: Text(
                 '냉동실',
-                style: TextStyle(color: Colors.orange[600], fontSize: 16),
+                style: TextStyle(color: Colors.deepOrangeAccent, fontSize: 16),
               ),
               padding: EdgeInsets.all(5)),
           Container(
@@ -92,7 +156,7 @@ class Fridges extends StatelessWidget {
             child: Wrap(
               spacing: 5.0,
               runSpacing: 3.0,
-              children: [Ingredients()],
+              //children: makeIngredients(),
             ),
           ),
         ],
@@ -101,33 +165,83 @@ class Fridges extends StatelessWidget {
   }
 }
 
+//재료 필터칩 개수만큼 만들기
+List<Widget> getIngredients(
+    BuildContext context, List<Ingredient>? ingredient) {
+  List<Widget> results = [];
 
-
-
-//재료
-class Ingredients extends StatefulWidget {
-  const Ingredients({Key? key}) : super(key: key);
-
-  @override
-  State<Ingredients> createState() => _IngredientsState();
-}
-
-class _IngredientsState extends State<Ingredients> {
-  @override
-  Widget build(BuildContext context) {
-    return FilterChip(
-        // avatar: Icon(Icons.inventory_2, size: 17,),
+  //재료가 null이거나 없을 때
+  if (ingredient == null || ingredient.length < 1) {
+    results.add(Text('냉장고가 비었어요.'));
+  } else //뭐라도 하나 있을때
+  {
+    for (var i = 0; i < (ingredient.length); i++) {
+      results.add(FilterChip(
         label: Text(
-          '청경채',
+          ingredient[i].name,
           style: TextStyle(color: Colors.black87),
         ),
+        avatar: Icon(
+          Icons.egg,
+          size: 20,
+          color: Colors.deepOrangeAccent,
+        ),
         backgroundColor: Colors.transparent,
-        shape: StadiumBorder(side: BorderSide(color: Colors.orange)),
-        selected: true,
-        selectedColor: Colors.orange,
+        selectedColor: Colors.deepOrangeAccent,
         checkmarkColor: Colors.white,
+        shape: StadiumBorder(side: BorderSide(color: Colors.deepOrangeAccent)),
         onSelected: (bool value) {
-          print('select');
-        });
+          print(ingredient[i].name.toString());
+        },
+        pressElevation: null,
+      ));
+    }
+  }
+
+  return results;
+}
+
+
+
+
+
+
+
+
+
+
+
+class FilterPage extends StatelessWidget {
+  late final List<Ingredient>? ingredient;
+  FilterPage({this.ingredient});
+
+  //late final List<Ingredient>? selectedIgnt;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: FilterListWidget<Ingredient>(
+        listData: ingredient,
+        selectedListData: ingredient,
+
+        // onApplyButtonClick: (list) {
+        //   // do something with list ..
+        // },
+        choiceChipLabel: (item) {
+          /// Used to display text on chip
+          return item!.name;
+        },
+        validateSelectedItem: (list, val) {
+          ///  identify if item is selected or not
+          return list!.contains(val);
+        },
+        onItemSearch: (user, query) {
+          /// When search query change in search bar then this method will be called
+          ///
+          /// Check if items contains query
+          return user.name.toLowerCase().contains(query.toLowerCase());
+        },
+      ),
+    );
   }
 }

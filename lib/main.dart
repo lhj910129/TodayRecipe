@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:todayrecipe/view/bookMark.dart';
 import 'package:todayrecipe/view/kitchen.dart';
@@ -5,7 +6,10 @@ import 'package:todayrecipe/view/myPage.dart';
 import 'package:todayrecipe/view/recipe.dart';
 import 'package:todayrecipe/widget/bottomBar.dart';
 
-void main() {
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  
   runApp(const MyApp());
 }
 
