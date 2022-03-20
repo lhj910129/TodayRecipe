@@ -48,12 +48,9 @@ class _KitchenState extends State<Kitchen> {
         backgroundColor: Colors.deepOrangeAccent,
         onPressed: () {
           /*
-              - 추가버튼을 숨긴다
-              
-              - 삭제, 이동 버튼이 보여야한다 -> 앱바를 아예바꿀까
-
-
-
+              - 추가버튼을 숨기는 함수 필요
+              - 재료가 아예 없을때는 아무 반응 없음
+              - 
              */
         },
       ),
