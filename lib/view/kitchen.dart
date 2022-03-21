@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:todayrecipe/model/ingredient.dart';
 
+import '../widget/widgetFridge.dart';
+
 class Kitchen extends StatefulWidget {
   const Kitchen({Key? key}) : super(key: key);
 
@@ -22,6 +24,11 @@ class _KitchenState extends State<Kitchen> {
     super.initState();
 
     streamData = firestore.collection('ingredient').snapshots();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _fetchData(context);
   }
 
   //데이터 가져오기
@@ -41,15 +48,16 @@ class _KitchenState extends State<Kitchen> {
 
     return Scaffold(
       appBar: KetchenAppBar(),
-      body: Wrap(children: getIngredients(context, ingredient)), //Fridges(),
-      //body: FilterPage(ingredient: ingredient),
+      body: Wrap(
+        children: getIngredients(context, ingredient),
+        spacing: 10,
+      ), //Wrap(children: getIngredients(context, ingredient), spacing: 10),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
         backgroundColor: Colors.deepOrangeAccent,
         onPressed: () {
           /*
-              - 추가버튼을 숨기는 함수 필요
-              - 재료가 아예 없을때는 아무 반응 없음
+              
               - 
              */
         },
@@ -57,12 +65,57 @@ class _KitchenState extends State<Kitchen> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return _fetchData(context);
+  //재료 필터칩 개수만큼 만들기
+  List<Widget> getIngredients(
+      BuildContext context, List<Ingredient> ingredient) {
+    List<Widget> results = [];
+    List<Ingredient> sel = [];
+
+    //재료가 null이거나 없을 때
+    if (ingredient == null || ingredient.isEmpty) {
+      results.add(Text('냉장고가 비었어요.'));
+    } else //뭐라도 하나 있을때
+    {
+      for (var i = 0; i < (ingredient.length); i++) {
+        results.add(FilterChip(
+          label: Text(
+            ingredient[i].name,
+            style: TextStyle(color: Colors.black87),
+          ),
+          avatar: Icon(
+            Icons.egg,
+            size: 20,
+            color: Colors.deepOrangeAccent,
+          ),
+          backgroundColor: Colors.transparent,
+          selectedColor: Colors.deepOrangeAccent,
+          checkmarkColor: Colors.white,
+          shape:
+              StadiumBorder(side: BorderSide(color: Colors.deepOrangeAccent)),
+          
+          onSelected: (bool selected) {
+            print(ingredient[i].name.toString());
+
+            setState(() {
+              if (selected) {
+                sel.add(ingredient[i]);
+              } else {
+                // sel.removeWhere((value) => value == ingredient[i].name
+                // );
+              }
+            });
+          },
+          selected: sel.contains(ingredient[i])));
+      }
+    }
+
+    return results;
   }
+
+  
 }
 
+//상단바, 추가버튼
 class KetchenAppBar extends StatefulWidget with PreferredSizeWidget {
   const KetchenAppBar({Key? key}) : super(key: key);
 
@@ -118,11 +171,12 @@ class _KetchenAppBarState extends State<KetchenAppBar> {
                       print(selMode);
 
                       setState(() {
-                        
-
-                        
                         selMode = !selMode;
                       });
+                      /*
+                        - AppBar의 Floating Button 숨기기
+                      
+                       */
                     },
                     child: Text(
                       '선택',
@@ -162,52 +216,6 @@ class getFridges extends StatelessWidget {
   }
 }
 
-//재료 필터칩 개수만큼 만들기
-List<Widget> getIngredients(
-    BuildContext context, List<Ingredient>? ingredient) {
-  List<Widget> results = [];
-
-  //재료가 null이거나 없을 때
-  if (ingredient == null || ingredient.length < 1) {
-    results.add(Text('냉장고가 비었어요.'));
-  } else //뭐라도 하나 있을때
-  {
-    for (var i = 0; i < (ingredient.length); i++) {
-      results.add(FilterChip(
-        label: Text(
-          ingredient[i].name,
-          style: TextStyle(color: Colors.black87),
-        ),
-        avatar: Icon(
-          Icons.egg,
-          size: 20,
-          color: Colors.deepOrangeAccent,
-        ),
-        backgroundColor: Colors.transparent,
-        selectedColor: Colors.deepOrangeAccent,
-        checkmarkColor: Colors.white,
-        shape: StadiumBorder(side: BorderSide(color: Colors.deepOrangeAccent)),
-        onSelected: (bool value) {
-          print(ingredient[i].name.toString());
-        },
-        pressElevation: null,
-      ));
-    }
-  }
-
-  return results;
-}
-
-
-
-
-
-
-
-
-
-
-
 class FilterPage extends StatelessWidget {
   late final List<Ingredient>? ingredient;
   FilterPage({this.ingredient});
@@ -239,6 +247,25 @@ class FilterPage extends StatelessWidget {
           return user.name.toLowerCase().contains(query.toLowerCase());
         },
       ),
+    );
+  }
+}
+
+
+
+
+class MakeChips extends StatefulWidget {
+  const MakeChips({ Key? key }) : super(key: key);
+
+  @override
+  State<MakeChips> createState() => _MakeChipsState();
+}
+
+class _MakeChipsState extends State<MakeChips> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      
     );
   }
 }
