@@ -4,12 +4,12 @@ import 'package:todayrecipe/view/bookMark.dart';
 import 'package:todayrecipe/view/kitchen.dart';
 import 'package:todayrecipe/view/myPage.dart';
 import 'package:todayrecipe/view/recipe.dart';
-import 'package:todayrecipe/widget/bottomBar.dart';
+import 'package:todayrecipe/widget/widget_bottomBar.dart';
 
-void main() async{
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  
+
   runApp(const MyApp());
 }
 
