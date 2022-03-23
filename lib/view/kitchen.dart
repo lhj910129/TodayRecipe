@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:todayrecipe/model/ingredient.dart';
 
+import '../widget/widget_OpenFilterDialog.dart';
+
 class Kitchen extends StatefulWidget {
   const Kitchen({Key? key}) : super(key: key);
 
@@ -14,12 +16,16 @@ class Kitchen extends StatefulWidget {
 }
 
 class _KitchenState extends State<Kitchen> {
-  Stream<QuerySnapshot>? streamData =
-      FirebaseFirestore.instance.collection('ingredient').snapshots();
+  final Stream<QuerySnapshot>? streamData = FirebaseFirestore.instance.collection('ingredient').snapshots();
 
   bool floatShow = true; //floating버튼 표시용도
   bool selMode = false; //재료 선택모드 구별용도
   List<String> selChips = []; //선택한 칩 담는용
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,13 +39,15 @@ class _KitchenState extends State<Kitchen> {
           //기다리는중일때
           return Text("Loading");
         }
-
         return _buildBody(context, snapshot.data!.docs)!;
       },
     );
   }
 
   Widget? _buildBody(BuildContext context, List<DocumentSnapshot> snapshot) {
+    List<Ingredient> igdt =
+        snapshot.map((e) => Ingredient.fromSnapShot(e)).toList();
+
     return Scaffold(
       appBar: AppBar(
           title: Text('냉장고'),
@@ -56,6 +64,8 @@ class _KitchenState extends State<Kitchen> {
                     ),
                     onPressed: () {
                       if (selChips.isNotEmpty) {
+                        print('선택한 재료 :' + selChips.toString());
+
                         showDialog<String>(
                           context: context,
                           builder: (BuildContext context) => AlertDialog(
@@ -70,11 +80,22 @@ class _KitchenState extends State<Kitchen> {
                               TextButton(
                                 onPressed: () {
                                   Navigator.pop(context, 'OK');
-                                  /* 선택한 칩 리스트 가지고 가서 업데이트 하기 */
 
-
-
-                                  
+                                  setState(() {
+                                    if (selChips.isNotEmpty) {
+                                      for (int i = 0;
+                                          i < selChips.length;
+                                          i++) {
+                                        igdt[igdt.indexWhere((element) =>
+                                                element.name.toString() ==
+                                                selChips[i].toString())]
+                                            .reference!
+                                            .delete();
+                                        print(
+                                            selChips[i].toString() + ' 삭제 완료');
+                                      }
+                                    }
+                                  });
                                 },
                                 child: const Text('삭제'),
                               ),
@@ -124,11 +145,7 @@ class _KitchenState extends State<Kitchen> {
       ),
       floatingActionButton: Visibility(
         visible: floatShow,
-        child: FloatingActionButton(
-          child: Icon(Icons.add),
-          backgroundColor: Colors.deepOrangeAccent,
-          onPressed: () {},
-        ),
+        child: OpenFilterDialog()
       ),
     );
   }
@@ -169,8 +186,12 @@ class _KitchenState extends State<Kitchen> {
                   }
                 });
               }));
-    });
+    }
+    );
   }
+
+
+  
 }
 
 //냉장고
@@ -203,40 +224,3 @@ class getFridges extends StatelessWidget {
   }
 }
 
-class FilterPage extends StatelessWidget {
-  late final List<Ingredient>? ingredient;
-  FilterPage({this.ingredient});
-
-  //late final List<Ingredient>? selectedIgnt;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: FilterListWidget<Ingredient>(
-        listData: ingredient,
-        selectedListData: ingredient,
-
-        // onApplyButtonClick: (list) {
-        //   // do something with list ..
-        // },
-        choiceChipLabel: (item) {
-          /// Used to display text on chip
-          return item!.name;
-        },
-        validateSelectedItem: (list, val) {
-          ///  identify if item is selected or not
-          return list!.contains(val);
-        },
-        onItemSearch: (user, query) {
-          /// When search query change in search bar then this method will be called
-          ///
-          /// Check if items contains query
-          return user.name
-              .toString()
-              .toLowerCase()
-              .contains(query.toLowerCase());
-        },
-      ),
-    );
-  }
-}
