@@ -14,7 +14,7 @@ class _OpenFilterDialogState extends State<OpenFilterDialog> {
   final Stream<QuerySnapshot>? streamData =
       FirebaseFirestore.instance.collection('all_ingredient').snapshots();
 
-  List<Ingredient> selIgdt = []; //선택한 재료 담는용
+  List<Ingredient> selIgdt = [];
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +44,8 @@ class _OpenFilterDialogState extends State<OpenFilterDialog> {
     List<Ingredient> igdt =
         snapshot.map((e) => Ingredient.fromSnapShot(e)).toList();
 
+    selIgdt.clear();
+
     await FilterListDialog.display<Ingredient>(
       context,
       listData: igdt,
@@ -69,20 +71,67 @@ class _OpenFilterDialogState extends State<OpenFilterDialog> {
         Icons.close,
         color: Colors.deepOrangeAccent,
       ),
-      // controlButtons: [ContolButtonType.Reset],
-      // choiceChipBuilder: (context, item, isSelected) {
-      //   item = igdt;
-      //   return item.map((e) {
-      //     Padding(
-      //       padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
-      //       child: FilterChip(
-      //           label: Text('dd'),
-      //           onSelected: (bool selected) {
-      //             isSelected;
-      //           }),
-      //     );
-      //   });
-      // },
+      backgroundColor: Colors.blue,
+      controlButtons: [],
+      choiceChipBuilder: (context, igdt, isSelected) {
+        return
+            // FilterChip(
+            //   label: Text(
+            //     igdt.name,
+            //     style: TextStyle(color: Colors.black87),
+            //   ),
+            //   avatar: Icon(
+            //     Icons.egg,
+            //     size: 20,
+            //     color: Colors.deepOrangeAccent,
+            //   ),
+            //   shape: StadiumBorder(side: BorderSide(color: Colors.deepOrangeAccent)),
+            //   backgroundColor: Colors.transparent,
+            //   selectedColor: Colors.deepOrangeAccent,
+            //   checkmarkColor: Colors.white,
+            //   selected: isSelected!,
+            //   onSelected: (bool value) {
+            //     setState(() {
+            //       print(selIgdt.contains(igdt));
+
+            //       if (value) {
+            //         selIgdt.add(igdt);
+            //       } else {
+            //         selIgdt.removeWhere((Ingredient _igdt) {
+            //           return _igdt == igdt;
+            //         });
+            //       }
+            //     });
+
+            //     print(selIgdt.toString());
+            //   },
+            // );
+
+            ChoiceChip(
+              label: Text(igdt.name,),
+              labelStyle: isSelected!? TextStyle(color: Colors.white) :TextStyle(color: Colors.black),
+              shadowColor: Colors.transparent,
+              selected: isSelected!,
+              shape: StadiumBorder(side: BorderSide(color: Colors.deepOrangeAccent)),
+              avatar: Icon(
+                Icons.egg,
+                size: 20,
+                color: isSelected!?Colors.white: Colors.deepOrangeAccent,
+              ),
+
+              disabledColor: Colors.white,
+              backgroundColor: Colors.white,
+              selectedColor: Colors.deepOrangeAccent,
+              // onSelected: (bool select){
+              //   print('선택함');
+
+              // }
+              
+            );
+
+
+
+      },
     );
   }
 }
