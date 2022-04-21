@@ -1,28 +1,38 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:filter_list/filter_list.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:todayrecipe/model/ingredient.dart';
 
 class OpenFilterDialog extends StatefulWidget {
-  const OpenFilterDialog({Key? key}) : super(key: key);
+  OpenFilterDialog({this.myIgdt});
+  final List<Ingredient>? myIgdt;
 
   @override
   State<OpenFilterDialog> createState() => _OpenFilterDialogState();
 }
 
 class _OpenFilterDialogState extends State<OpenFilterDialog> {
-  final Stream<QuerySnapshot>? streamData =
-      FirebaseFirestore.instance.collection('all_ingredient').snapshots();
+  @override
+  void initState() {
+    super.initState();
+  }
 
-  List<Ingredient> selIgdt = [];
+  List<Ingredient> selIgdt = []; //선택한 재료 담는 리스트
 
   @override
   Widget build(BuildContext context) {
+    final Stream<QuerySnapshot>? streamData =
+        FirebaseFirestore.instance.collection('all_ingredient')
+        //.where('name', isNotEqualTo: widget.myIgdt)
+        .snapshots();
+
+
     return StreamBuilder<QuerySnapshot>(
         stream: streamData,
         builder: (context, snapshot) {
-          if (!snapshot.hasData)
-            return LinearProgressIndicator(); //데이터가 없을때 프로그래스 바
+          // if (!snapshot.hasData)
+          //   return LinearProgressIndicator(); //데이터가 없을때 프로그래스 바
           if (snapshot.hasError) return Text('snapShot Error'); //에러났을때
           if (snapshot.connectionState == ConnectionState.waiting) {
             //기다리는중일때
@@ -32,7 +42,9 @@ class _OpenFilterDialogState extends State<OpenFilterDialog> {
             child: Icon(Icons.add),
             backgroundColor: Colors.deepOrangeAccent,
             onPressed: () {
-              print('전체 재료 목록 선택팝업 가져오기');
+              print('내 냉장고속 재료 :' + widget.myIgdt.toString());
+              print('전체 재료 :' + snapshot.data!.docs.map((e) => Ingredient.fromSnapShot(e)).toString());
+              
               openFilterDialog(context, snapshot.data!.docs);
             },
           );
@@ -41,14 +53,21 @@ class _OpenFilterDialogState extends State<OpenFilterDialog> {
 
   void openFilterDialog(
       BuildContext context, List<DocumentSnapshot> snapshot) async {
-    List<Ingredient> igdt =
-        snapshot.map((e) => Ingredient.fromSnapShot(e)).toList();
+    List<Ingredient> allIgdt = snapshot.map((e) => Ingredient.fromSnapShot(e)).toList();
+    
+
+
+
+
+
+
+    
 
     selIgdt.clear();
 
     await FilterListDialog.display<Ingredient>(
       context,
-      listData: igdt,
+      listData: allIgdt,
       selectedListData: selIgdt,
       choiceChipLabel: (e) => e!.name.toString(),
       validateSelectedItem: (e, val) => e!.contains(val),
@@ -56,11 +75,29 @@ class _OpenFilterDialogState extends State<OpenFilterDialog> {
         return e.name.toString().toLowerCase().contains(query.toLowerCase());
       },
       onApplyButtonClick: (list) {
-        Navigator.pop(context);
-        setState(() {
+        
+        setState(() async {
           selIgdt = List.from(list!);
           print(selIgdt.toString());
+
+          // if(selIgdt.length > 0){
+          //   for(int i = 0; i < selIgdt.length; i++){
+            
+          //     //선택한 재료 insert한다
+          //     widget.myIgdt!.insert(selIgdt.length + i, selIgdt[i]);
+          //   }
+          // }
+
+          //await widget.myIgdt!.se
+
+          
+
+          print(widget.myIgdt.toString());
+          //바깥에 있는 내 재료 목ㅗ을 초화야함
+
+
         });
+        Navigator.pop(context); //뒤로가기
       },
       applyButtonText: '추가',
       allButtonText: '전체',
@@ -71,67 +108,49 @@ class _OpenFilterDialogState extends State<OpenFilterDialog> {
         Icons.close,
         color: Colors.deepOrangeAccent,
       ),
-      backgroundColor: Colors.blue,
       controlButtons: [],
+      themeData: FilterListThemeData(context,
+          headerTheme: HeaderThemeData(
+              headerTextStyle:
+                  TextStyle(color: Colors.deepOrangeAccent, fontSize: 17),
+              searchFieldHintText: '검색',
+              searchFieldTextStyle: TextStyle(
+                fontSize: 16,
+              )),
+          wrapCrossAxisAlignment: WrapCrossAlignment.center,
+          controlButtonBarTheme: ControlButtonBarThemeData(
+              padding: EdgeInsets.all(5),
+              controlButtonTheme: ControlButtonThemeData(
+                  primaryButtonBackgroundColor: Colors.white,
+                  primaryButtonTextStyle:
+                      TextStyle(color: Colors.deepOrangeAccent)))),
       choiceChipBuilder: (context, igdt, isSelected) {
-        return
-            // FilterChip(
-            //   label: Text(
-            //     igdt.name,
-            //     style: TextStyle(color: Colors.black87),
-            //   ),
-            //   avatar: Icon(
-            //     Icons.egg,
-            //     size: 20,
-            //     color: Colors.deepOrangeAccent,
-            //   ),
-            //   shape: StadiumBorder(side: BorderSide(color: Colors.deepOrangeAccent)),
-            //   backgroundColor: Colors.transparent,
-            //   selectedColor: Colors.deepOrangeAccent,
-            //   checkmarkColor: Colors.white,
-            //   selected: isSelected!,
-            //   onSelected: (bool value) {
-            //     setState(() {
-            //       print(selIgdt.contains(igdt));
-
-            //       if (value) {
-            //         selIgdt.add(igdt);
-            //       } else {
-            //         selIgdt.removeWhere((Ingredient _igdt) {
-            //           return _igdt == igdt;
-            //         });
-            //       }
-            //     });
-
-            //     print(selIgdt.toString());
-            //   },
-            // );
-
-            ChoiceChip(
-              label: Text(igdt.name,),
-              labelStyle: isSelected!? TextStyle(color: Colors.white) :TextStyle(color: Colors.black),
-              shadowColor: Colors.transparent,
-              selected: isSelected!,
-              shape: StadiumBorder(side: BorderSide(color: Colors.deepOrangeAccent)),
-              avatar: Icon(
-                Icons.egg,
-                size: 20,
-                color: isSelected!?Colors.white: Colors.deepOrangeAccent,
-              ),
-
-              disabledColor: Colors.white,
-              backgroundColor: Colors.white,
-              selectedColor: Colors.deepOrangeAccent,
-              // onSelected: (bool select){
-              //   print('선택함');
-
-              // }
-              
-            );
-
-
-
+        return Padding(
+          padding: const EdgeInsets.only(left: 10),
+          child: Chip(
+            label: Text(igdt.name),
+            labelStyle: isSelected!
+                ? TextStyle(color: Colors.white)
+                : TextStyle(color: Colors.black),
+            avatar: Icon(
+              Icons.egg,
+              size: 20,
+              color: isSelected? Colors.white : Colors.deepOrangeAccent,
+            ),
+            shape:
+                StadiumBorder(side: BorderSide(color: Colors.deepOrangeAccent)),
+            backgroundColor:
+                isSelected? Colors.deepOrangeAccent : Colors.white,
+          ),
+        );
       },
     );
   }
+
+  Future InsertIgdt(Ingredient igdt) async {
+
+
+  }
+
+
 }

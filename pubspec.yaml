@@ -81,6 +81,12 @@ flutter:
       fonts:
         - asset: fonts/Cafe24Ssurround-Air.ttf
         - asset: fonts/Cafe24Ssurround-Regular.ttf
+    - family: GmarketSans
+      fonts:
+        - asset: fonts/GmarketSansTTFBold.ttf
+        - asset: fonts/GmarketSansTTFMedium.ttf
+        - asset: fonts/GmarketSansTTFLight.ttf
+
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages

@@ -10,25 +10,31 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
 
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
         title: '오늘레시피',
         theme: ThemeData(
-          brightness: Brightness.light,
-          primaryColor: Colors.white,
-          //fontFamily: 'Cafe24Ssurround'
+          primarySwatch: Colors.deepOrange,
+          //accentColor: Colors.deepOrangeAccent,
+          canvasColor: Colors.white,
+          fontFamily: 'GmarketSans',
         ),
         home: DefaultTabController(
             length: 3,
             child: Scaffold(
               body: TabBarView(
-                children: <Widget>[Kitchen(), Recipe(), BookMark()],
+                children: [
+                  Kitchen(),
+                  Recipe(),
+                  BookMark(),
+                ],
                 physics: NeverScrollableScrollPhysics(),
               ),
               bottomNavigationBar: BottomBar(),
